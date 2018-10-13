@@ -1,26 +1,38 @@
 module Game
-
-  def get_cards
-    # Раздается 2 карты участнику, count карт прибавляется в cards_sum участников
+  def get_cards(deck)
+    card = deck.give_card
+    @card_sum += card.count
+    @cards << card
   end
 
   def bets
-    # из банкролла участника вычитается 10 и добавляется в общий банк
+    @bankroll -= 10
   end
 
-  def stands
-    # участник не берет карту (нужен ли метод? пока не знаю)
-  end
-
-  def hits
-    # участник берет карту (мб вместо get_cards лучше 2.times { hits })
+  def hits(deck)
+    card = deck.give_card
+    self.cards_sum += card.count
+    cards << card
   end
 
   def wins_bank
-    # участник выигрывает банк и деньги прибавляются к его банкроллу
+    @bankroll += 20
   end
 
   def return
-    # ничья, ставки возвращены
+    @bankroll += 10
+  end
+
+  def show_cards
+    cards.map { |card| card.value + card.suit }.join(' ')
+  end
+
+  def check_cards_sum
+    @cards_sum -= 10 if @cards.select { |card| card.value == 'A' }.any? && @cards_sum > 21
+  end
+
+  def end_round
+    @cards = []
+    @cards_sum = 0
   end
 end
