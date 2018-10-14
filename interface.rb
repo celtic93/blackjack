@@ -1,50 +1,24 @@
-class Interface
-  def initialize
-    start_game
+module Interface
+
+  def start_game_message  
+    puts 'Как вас зовут?'
+    @name = gets.to_s.strip.capitalize!
+
+    raise 'Введите правильное имя' if @name.nil?
+
+    puts "#{@name}, добро пожаловать в казино 'Три пера'. Пусть с вами прибудет сила бизонов!"  
+  rescue StandardError => e
+    puts e      
+    retry
   end
 
-  def start_game
-    begin
-      puts 'Как вас зовут?'
-      name = gets.to_s.strip.capitalize!
-
-      raise 'Введите правильное имя' if name.nil?
-    rescue StandardError => e
-      puts e
-      sleep 1
-      retry
-    end
-
-    @player = Player.new(name)
-    @dealer = Dealer.new
-    @deck = Deck.new
-    sleep 1
-    puts "#{name}, добро пожаловать в казино 'Три пера'. Пусть с вами прибудет сила бизонов!"
-    sleep 1
-    get_cards_game
-  end
-
-  def get_cards_game
-    @player.bets
-    @dealer.bets
+  def get_cards_game_message
     puts "Вы поставили 10 фишек. Осталось #{@player.bankroll}"
-    sleep 1
-
-    2.times { @player.hits(@deck) }
-    2.times { @dealer.hits(@deck) }
-    @player.check_cards_sum
-    @dealer.check_cards_sum
-
-    puts "Ваши карты #{@player.show_cards} Очков #{@player.cards_sum}"
-    sleep 1
+    puts "Ваши карты #{@player.show_cards} Очков #{@player.cards_sum}"   
     puts 'Карты дилера Х Х'
-    sleep 1
-    player_choice_input
   end
 
-  def player_choice_input
-    comparison if @player.cards.size > 2
-
+  def player_choice_input_message
     puts 'Сделайте выбор'
     puts '1 - Пропустить ход'
     puts '2 - Добавить карту'
@@ -53,124 +27,60 @@ class Interface
 
     raise 'Вы уже пропускали ход' if @choice == 1 && @dealer_choice_index == 1
     raise 'Выбирайте внимательней' unless (1..3).cover?(@choice)
-
-    sleep 1
-    player_choice
+    
   rescue RuntimeError => e
-    puts e
-    sleep 1
+    puts e  
     retry
   end
 
-  def player_choice
-    case @choice
-    when 1
-      dealer_choice
-    when 2
-      add_card
-    when 3
-      comparison
-    end
-  end
-
-  def dealer_choice
-    if @dealer_choice_index == 1
-      sleep 1
-      comparison
-    end
-
-    @dealer_choice_index ||= 1
-
+  def dealer_hits_message
     puts 'Ход дилера'
-    sleep 1
-
-    if @dealer.cards_sum < 17
-      @dealer.hits(@deck)
-      @dealer.check_cards_sum
-      puts 'Дилер добирает карту'
-      sleep 1
-      puts 'Карты дилера Х Х X'
-      sleep 1
-      puts 'Дилеру больше нельзя брать карты'
-    else
-      puts 'Дилер решил не брать карту'
-      sleep 1
-      puts 'Карты дилера Х Х'
-    end
-
-    sleep 1
-    player_choice_input
+    puts 'Дилер добирает карту. Дилеру больше нельзя брать карты в этом раунде'     
+    puts 'Карты дилера Х Х X'
   end
 
-  def add_card
-    puts 'Вы взяли одну карту'
-    sleep 1
-
-    @player.hits(@deck)
-    @player.check_cards_sum
-    puts "Ваши карты #{@player.show_cards} Очков #{@player.cards_sum}"
-    sleep 1
-    if @player.cards_sum > 21
-      @dealer.wins_bank
-      puts "Вы проиграли. Ваш банкролл #{@player.bankroll}"
-      one_more_time?
-    end
-    puts 'Вам больше нельзя брать карты'
-    sleep 1
-    dealer_choice
+  def dealer_stands_message
+    puts 'Ход дилера'
+    puts 'Дилер решил не брать карту'     
+    puts 'Карты дилера Х Х'
   end
 
-  def comparison
-    puts 'ВСКРЫВАЕМСЯ'
-    sleep 1
+  def add_card_message
+    puts 'Вы взяли одну карту. Вам больше нельзя брать карты в этом раунде'
     puts "Ваши карты #{@player.show_cards} Очков #{@player.cards_sum}"
-    sleep 1
+  end
+
+  def comparison_message
+    puts 'ВСКРЫВАЕМСЯ'    
+    puts "Ваши карты #{@player.show_cards} Очков #{@player.cards_sum}"    
     puts "Карты дилера #{@dealer.show_cards} #{@dealer.cards_sum}"
-    sleep 1
-
-    if @dealer.cards_sum > 21 || @player.cards_sum > @dealer.cards_sum
-      @player.wins_bank
-      puts "Вы выиграли. Ваш банкролл #{@player.bankroll}"
-      sleep 1
-    elsif @player.cards_sum < @dealer.cards_sum
-      @dealer.wins_bank
-      puts "Вы проиграли. Ваш банкролл #{@player.bankroll}"
-      sleep 1
-    elsif @player.cards_sum == @dealer.cards_sum
-      puts "Ничья, ставки возвращены. Ваш банкролл #{@player.bankroll}"
-      sleep 1
-    end
-
-    @player.bankroll > 0 ? one_more_time? : good_bye
   end
 
-  def one_more_time?
-    @player.end_round
-    @dealer.end_round
-    @deck.shuffle
-    @dealer_choice_index = nil
+  def you_won_message
+    puts "Вы выиграли. Ваш банкролл #{@player.bankroll}"
+  end   
 
-    puts 'Хотите сыграть еще?'
-    sleep 1
+  def you_lost_message
+    puts "Вы проиграли. Ваш банкролл #{@player.bankroll}"
+  end 
+    
+  def tie_message
+    puts "Ничья, ставки возвращены. Ваш банкролл #{@player.bankroll}"      
+  end
+
+  def one_more_time_message?
+    puts 'Хотите сыграть еще?'   
     puts '1 - Да, 2 - Нет'
-    choice = gets.to_i
+    @last_choice = gets.to_i
 
-    raise 'Выбирайте внимательней' unless (1..2).cover?(choice)
-
-    if choice == 1
-      get_cards_game
-    else
-      good_bye
-    end
+    raise 'Выбирайте внимательней' unless (1..2).cover?(@last_choice)
   rescue RuntimeError => e
-    puts e
-    sleep 1
+    puts e    
     retry
   end
 
   def good_bye
-    puts "Мы рады, что вы #{@player.name} посетили казино 'Три пера'"
-    sleep 1
+    puts "Мы рады, что вы #{@player.name} посетили казино 'Три пера'"    
 
     if @player.bankroll > 100
       puts 'Вы выиграли сегодня немного монет, с чем мы Вас поздравляем'
@@ -180,8 +90,7 @@ class Interface
     else
       puts 'Вы остались при своих, а это тоже победа'
     end
-
-    sleep 1
+    
     exit
   end
 end
