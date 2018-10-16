@@ -26,11 +26,6 @@ class Deck
   def give_card
     @card = @deck.sample
     @deck.delete(@card)
-    @cards_in_play << @card
     @card
-  end
-
-  def shuffle
-    @deck += @cards_in_play
   end
 end
