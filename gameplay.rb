@@ -18,17 +18,12 @@ class Gameplay
   end
 
   def end_of_the_round
-    #@player.end_round
-    #@dealer.end_round
-    #@deck.shuffle
-    #@dealer_choice_index = nil
-
     @interface.one_more_time_message
 
     if @interface.last_choice == 1
       start_round
     else
-      @interface.good_bye
+      @interface.good_bye(@player)
     end
   end
 end

@@ -31,9 +31,6 @@ class Round
     2.times { hits(@deck, @player_cards, @player_cards_sum) }
     2.times { hits(@deck, @dealer_cards, @dealer_cards_sum) }
 
-    puts @player_cards
-    puts @player_cards_sum.sum
-
     check_cards_sum(@player_cards_sum)
     check_cards_sum(@dealer_cards_sum)
 
@@ -93,33 +90,25 @@ class Round
     dealer_choice
   end
 
-  # hits(deck, cards, cards_sum)
-    # bets(player)
-    # wins_bank(player)
-    # return_bank(player)
-    # show_cards(cards)
-    # check_cards_sum(cards_sum)
-    # end_round(cards, cards_sum)
-
   def comparison
-    @interface.comparison_message
+    @interface.comparison_message(self, @player_cards, @dealer_cards, @player_cards_sum, @dealer_cards_sum)
 
     if @dealer_cards_sum.sum > 21 || @player_cards_sum.sum > @dealer_cards_sum.sum
       wins_bank(@player)
 
       @interface.you_won_message(@player)
-    elsif @player.cards_sum < @dealer.cards_sum
+    elsif @player_cards_sum.sum < @dealer_cards_sum.sum
       wins_bank(@dealer)
 
       @interface.you_lost_message(@player)
-    elsif @player.cards_sum == @dealer.cards_sum
+    elsif @player_cards_sum.sum == @dealer_cards_sum.sum
       return_bank(@player)
       return_bank(@dealer)
 
       @interface.tie_message(@player)
     end
 
-    @player.bankroll > 0 ? @gameplay.end_of_the_round : @interface.good_bye
+    @player.bankroll > 0 ? @gameplay.end_of_the_round : @interface.good_bye(@player)
   end
 
   def bets(player)

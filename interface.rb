@@ -2,9 +2,11 @@ class Interface
 
   attr_accessor :name, :choice, :last_choice
 
+
+
   def start_game_message
     puts 'Как вас зовут?'
-    @name = 'Resdf' #gets.to_s.strip.capitalize!
+    @name = gets.to_s.strip.capitalize!
 
     raise 'Введите правильное имя' if @name.nil?
 
@@ -51,10 +53,10 @@ class Interface
     puts "Ваши карты #{round.show_cards(player_cards)} Очков #{cards_sum.sum}"
   end
 
-  def comparison_message
+  def comparison_message(round, player_cards, dealer_cards, player_cards_sum, dealer_cards_sum)
     puts 'ВСКРЫВАЕМСЯ'
-    puts "Ваши карты #{@player.show_cards} Очков #{@player.cards_sum}"
-    puts "Карты дилера #{@dealer.show_cards} #{@dealer.cards_sum}"
+    puts "Ваши карты #{round.show_cards(player_cards)} Очков #{player_cards_sum.sum}"
+    puts "Карты дилера #{round.show_cards(dealer_cards)} #{dealer_cards_sum.sum}"
   end
 
   def you_won_message(player)
@@ -80,12 +82,12 @@ class Interface
     retry
   end
 
-  def good_bye
+  def good_bye(player)
     puts "Мы рады, что вы #{@name} посетили казино 'Три пера'"
 
-    if @player.bankroll > 100
+    if player.bankroll > 100
       puts 'Вы выиграли сегодня немного монет, с чем мы Вас поздравляем'
-    elsif @player.bankroll < 100
+    elsif player.bankroll < 100
       puts 'К сожалению, удача была сегодня не на вашей стороне.'
       puts 'Но не расстраивайтесь, в следующий раз Вам обязательно повезет'
     else

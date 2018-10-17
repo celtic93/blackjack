@@ -12,6 +12,14 @@ class Deck
     make_deck
   end
 
+  def give_card
+    @card = @deck.sample
+    @deck.delete(@card)
+    @card
+  end
+
+  protected
+
   def make_deck
     VALUES.each do |value|
       SUITS.each do |suit|
@@ -21,11 +29,5 @@ class Deck
         @deck << Card.new(value, suit, count)
       end
     end
-  end
-
-  def give_card
-    @card = @deck.sample
-    @deck.delete(@card)
-    @card
   end
 end
