@@ -6,4 +6,5 @@ require_relative 'player'
 require_relative 'dealer'
 require_relative 'gameplay'
 
-Gameplay.new
+game = Gameplay.new
+game.start_game

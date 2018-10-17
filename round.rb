@@ -1,6 +1,5 @@
 class Round
-
-  #attr_accessor :player_cards, :dealer_cards, :player_cards_sum, :dealer_cards_sum
+  # attr_accessor :player_cards, :dealer_cards, :player_cards_sum, :dealer_cards_sum
 
   def initialize(player, dealer, interface, gameplay)
     @player = player
@@ -14,8 +13,31 @@ class Round
 
     @player_cards_sum = []
     @dealer_cards_sum = []
+  end
 
+  def round_running
     get_cards
+    first_choice = player_choice
+
+    case first_choice
+    when 1
+      dealer_choice
+      second_choice = player_choice
+      add_card if second_choice == 2
+      return if @player_cards_sum.sum > 21
+
+      comparison
+    when 2
+      add_card
+      return if @player_cards_sum.sum > 21
+
+      dealer_choice
+      comparison
+    when 3
+      comparison
+    end
+
+    end_round
   end
 
   def show_cards(cards)
@@ -34,33 +56,16 @@ class Round
     check_cards_sum(@player_cards_sum)
     check_cards_sum(@dealer_cards_sum)
 
-    @interface.start_round_message(self, @player_cards ,@player, @player_cards_sum)
-
-    player_choice_input
-  end
-
-  def player_choice_input
-    comparison if @player_cards.size > 2
-
-    @interface.player_choice_input_message(@dealer_choice_index)
-
-    player_choice
+    @interface.start_round_message(self, @player_cards, @player, @player_cards_sum)
   end
 
   def player_choice
-    case @interface.choice
-    when 1
-      dealer_choice
-    when 2
-      add_card
-    when 3
-      comparison
-    end
+    @interface.player_choice_message(@dealer_choice_index)
+
+    @interface.choice
   end
 
   def dealer_choice
-    comparison if @dealer_choice_index == 1
-
     @dealer_choice_index ||= 1
 
     if @dealer_cards_sum.sum < 17
@@ -71,8 +76,6 @@ class Round
     else
       @interface.dealer_stands_message
     end
-
-    player_choice_input
   end
 
   def add_card
@@ -85,9 +88,7 @@ class Round
       wins_bank(@dealer)
 
       @interface.you_lost_message(@player)
-      @gameplay.end_of_the_round
     end
-    dealer_choice
   end
 
   def comparison
@@ -107,8 +108,6 @@ class Round
 
       @interface.tie_message(@player)
     end
-
-    @player.bankroll > 0 ? @gameplay.end_of_the_round : @interface.good_bye(@player)
   end
 
   def bets(player)
@@ -133,8 +132,7 @@ class Round
     cards_sum << -10 if cards_sum.select { |card| card == 11 }.any? && cards_sum.sum > 21
   end
 
-  def end_round(cards, cards_sum)
-    cards = []
-    cards_sum = 0
+  def end_round
+    puts 'Раунд окончен'
   end
 end

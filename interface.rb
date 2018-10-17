@@ -1,8 +1,5 @@
 class Interface
-
   attr_accessor :name, :choice, :last_choice
-
-
 
   def start_game_message
     puts 'Как вас зовут?'
@@ -22,7 +19,7 @@ class Interface
     puts 'Карты дилера Х Х'
   end
 
-  def player_choice_input_message(index)
+  def player_choice_message(index)
     puts 'Сделайте выбор'
     puts '1 - Пропустить ход'
     puts '2 - Добавить карту'
