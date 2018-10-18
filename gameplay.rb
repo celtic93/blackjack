@@ -1,31 +1,28 @@
 class Gameplay
   def initialize
-    @player = Player.new('resd')
-    @dealer = Dealer.new
     @interface = Interface.new
-
     @interface.start_game_message
+
+    @player = Player.new(@interface.name)
+    @dealer = Dealer.new    
   end
 
   def start_game
     loop do
-      round = Round.new(@player, @dealer, @interface, self)
+      round = Round.new(@player, @dealer, @interface)
       round.round_running
+      end_game if @player.bankroll.zero?
+
       @interface.one_more_time_message
-      if @interface.last_choice == 2 || @player.bankroll.zero?
-        @interface.good_bye(@player)
-        exit
-      end
+
+      end_game if @interface.last_choice == 2
     end
   end
 
-  # def end_of_the_round
-  #  @interface.one_more_time_message
-  #
-  #  if @interface.last_choice == 1
-  #    start_game
-  #  else
-  #    @interface.good_bye(@player)
-  #  end
-  # end
+  protected
+
+  def end_game
+    @interface.good_bye(@player)
+    exit
+  end
 end

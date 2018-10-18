@@ -1,11 +1,9 @@
 class Round
-  # attr_accessor :player_cards, :dealer_cards, :player_cards_sum, :dealer_cards_sum
 
-  def initialize(player, dealer, interface, gameplay)
+  def initialize(player, dealer, interface)
     @player = player
     @dealer = dealer
     @interface = interface
-    @gameplay = gameplay
     @deck = Deck.new
 
     @player_cards = []
@@ -40,10 +38,6 @@ class Round
     end_round
   end
 
-  def show_cards(cards)
-    cards.map { |card| card.value + card.suit }.join(' ')
-  end
-
   protected
 
   def get_cards
@@ -56,7 +50,7 @@ class Round
     check_cards_sum(@player_cards_sum)
     check_cards_sum(@dealer_cards_sum)
 
-    @interface.start_round_message(self, @player_cards, @player, @player_cards_sum)
+    @interface.start_round_message(@player_cards, @player, @player_cards_sum)
   end
 
   def player_choice
@@ -82,7 +76,7 @@ class Round
     hits(@deck, @player_cards, @player_cards_sum)
     check_cards_sum(@player_cards_sum)
 
-    @interface.add_card_message(self, @player_cards, @player_cards_sum)
+    @interface.add_card_message(@player_cards, @player_cards_sum)
 
     if @player_cards_sum.sum > 21
       wins_bank(@dealer)
@@ -92,7 +86,7 @@ class Round
   end
 
   def comparison
-    @interface.comparison_message(self, @player_cards, @dealer_cards, @player_cards_sum, @dealer_cards_sum)
+    @interface.comparison_message(@player_cards, @dealer_cards, @player_cards_sum, @dealer_cards_sum)
 
     if @dealer_cards_sum.sum > 21 || @player_cards_sum.sum > @dealer_cards_sum.sum
       wins_bank(@player)

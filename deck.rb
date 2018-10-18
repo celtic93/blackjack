@@ -8,7 +8,6 @@ class Deck
 
   def initialize
     @deck = []
-    @cards_in_play = []
     make_deck
   end
 

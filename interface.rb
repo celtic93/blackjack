@@ -13,9 +13,9 @@ class Interface
     retry
   end
 
-  def start_round_message(round, player_cards, player, cards_sum)
+  def start_round_message(player_cards, player, cards_sum)
     puts "Вы поставили 10 фишек. Осталось #{player.bankroll}"
-    puts "Ваши карты #{round.show_cards(player_cards)} Очков #{cards_sum.sum}"
+    puts "Ваши карты #{show_cards(player_cards)} Очков #{cards_sum.sum}"
     puts 'Карты дилера Х Х'
   end
 
@@ -45,15 +45,15 @@ class Interface
     puts 'Карты дилера Х Х'
   end
 
-  def add_card_message(round, player_cards, cards_sum)
+  def add_card_message(player_cards, cards_sum)
     puts 'Вы взяли одну карту. Вам больше нельзя брать карты в этом раунде'
-    puts "Ваши карты #{round.show_cards(player_cards)} Очков #{cards_sum.sum}"
+    puts "Ваши карты #{show_cards(player_cards)} Очков #{cards_sum.sum}"
   end
 
-  def comparison_message(round, player_cards, dealer_cards, player_cards_sum, dealer_cards_sum)
+  def comparison_message(player_cards, dealer_cards, player_cards_sum, dealer_cards_sum)
     puts 'ВСКРЫВАЕМСЯ'
-    puts "Ваши карты #{round.show_cards(player_cards)} Очков #{player_cards_sum.sum}"
-    puts "Карты дилера #{round.show_cards(dealer_cards)} #{dealer_cards_sum.sum}"
+    puts "Ваши карты #{show_cards(player_cards)} Очков #{player_cards_sum.sum}"
+    puts "Карты дилера #{show_cards(dealer_cards)} #{dealer_cards_sum.sum}"
   end
 
   def you_won_message(player)
@@ -92,5 +92,11 @@ class Interface
     end
 
     exit
+  end
+
+  protected
+
+  def show_cards(cards)
+    cards.map { |card| card.value + card.suit }.join(' ')
   end
 end

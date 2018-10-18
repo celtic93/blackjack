@@ -1,5 +1,4 @@
 class Dealer
-  attr_reader :name
   attr_accessor :bankroll
 
   def initialize
