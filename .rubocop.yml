@@ -15,4 +15,3 @@ Metrics/ClassLength:
 
 Metrics/AbcSize:
   Max: 40
-  
