@@ -22,7 +22,7 @@ class Gameplay
   protected
 
   def end_game
-    @interface.good_bye(@player)
+    @interface.good_bye(@player.bankroll)
     exit
   end
 end

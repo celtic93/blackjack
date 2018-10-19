@@ -21,30 +21,9 @@ class Round
 
     case first_choice
     when 1
-      dealer_turn
-      @interface.dealer_turn_message(@dealer_cards)     
-
-      second_choice = player_turn
-      add_card if second_choice == 2
-      @interface.add_card_message(@player_cards, @player_cards_sum)
-
-      lost_after_add_card
-      return if @player_cards_sum > 21
-
-      @interface.reveal_cards_message(@player.bankroll, @player_cards, @dealer_cards, @player_cards_sum, @dealer_cards_sum)
-      reveal_cards
+      player_skipped
     when 2
-      add_card
-      @interface.add_card_message(@player_cards, @player_cards_sum)
-
-      lost_after_add_card 
-      return if @player_cards_sum > 21
-
-      dealer_turn   
-      @interface.dealer_turn_message(@dealer_cards)   
-
-      @interface.reveal_cards_message(@player.bankroll, @player_cards, @dealer_cards, @player_cards_sum, @dealer_cards_sum)
-      reveal_cards
+      player_took_card
     when 3
       @interface.reveal_cards_message(@player.bankroll, @player_cards, @dealer_cards, @player_cards_sum, @dealer_cards_sum)
       reveal_cards
@@ -54,6 +33,37 @@ class Round
   end
 
   protected
+
+  def player_skipped
+    dealer_turn
+    @interface.dealer_turn_message(@dealer_cards)     
+
+    second_choice = player_turn
+    add_card if second_choice == 2
+    @interface.add_card_message(@player_cards, @player_cards_sum)
+
+    lost_after_add_card
+
+    if @player_cards_sum < 21
+      @interface.reveal_cards_message(@player.bankroll, @player_cards, @dealer_cards, @player_cards_sum, @dealer_cards_sum)
+      reveal_cards
+    end
+  end
+
+  def player_took_card
+    add_card
+    @interface.add_card_message(@player_cards, @player_cards_sum)
+
+    lost_after_add_card
+
+    if @player_cards_sum < 21
+      dealer_turn   
+      @interface.dealer_turn_message(@dealer_cards)
+
+      @interface.reveal_cards_message(@player.bankroll, @player_cards, @dealer_cards, @player_cards_sum, @dealer_cards_sum)
+      reveal_cards
+    end
+  end
 
   def betting
     bets(@player)
@@ -110,10 +120,14 @@ class Round
   end
 
   def hits(deck, cards, cards_sum, player)
-    card = deck.give_card
-    cards_sum += card.count
-    instance_variable_set("@#{player.class.to_s.downcase}_cards_sum".to_sym, cards_sum)
+    card = deck.give_card    
     cards << card
+
+    if player.is_a?(Player)
+      @player_cards_sum += card.count
+    else
+      @dealer_cards_sum += card.count
+    end
   end
 
   def wins_bank(player)
@@ -125,10 +139,10 @@ class Round
   end
 
   def check_cards_sum(cards, player)
-    if cards.select { |card| card.count == 11 }.any?
-      cards_sum = instance_variable_get("@#{player.class.to_s.downcase}_cards_sum".to_sym)
-      cards_sum -= 10
-      instance_variable_set("@#{player.class.to_s.downcase}_cards_sum".to_sym, cards_sum)
+    if cards.select { |card| card.count == 11 }.any? && player.is_a?(Player)
+      @player_cards_sum -= 10
+    elsif cards.select { |card| card.count == 11 }.any? && player.is_a?(Dealer)
+      @dealer_cards_sum -= 10
     end
   end
 end
