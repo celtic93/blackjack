@@ -9,98 +9,99 @@ class Round
     @player_cards = []
     @dealer_cards = []
 
-    @player_cards_sum = []
-    @dealer_cards_sum = []
+    @player_cards_sum = 0
+    @dealer_cards_sum = 0
   end
 
   def round_running
-    get_cards
-    first_choice = player_choice
+    betting
+    deal_cards
+    @interface.start_round_message(@player_cards, @player.bankroll, @player_cards_sum)
+    first_choice = player_turn
 
     case first_choice
     when 1
-      dealer_choice
-      second_choice = player_choice
-      add_card if second_choice == 2
-      return if @player_cards_sum.sum > 21
+      dealer_turn
+      @interface.dealer_turn_message(@dealer_cards)     
 
-      comparison
+      second_choice = player_turn
+      add_card if second_choice == 2
+      @interface.add_card_message(@player_cards, @player_cards_sum)
+
+      lost_after_add_card
+      return if @player_cards_sum > 21
+
+      @interface.reveal_cards_message(@player.bankroll, @player_cards, @dealer_cards, @player_cards_sum, @dealer_cards_sum)
+      reveal_cards
     when 2
       add_card
-      return if @player_cards_sum.sum > 21
+      @interface.add_card_message(@player_cards, @player_cards_sum)
 
-      dealer_choice
-      comparison
+      lost_after_add_card 
+      return if @player_cards_sum > 21
+
+      dealer_turn   
+      @interface.dealer_turn_message(@dealer_cards)   
+
+      @interface.reveal_cards_message(@player.bankroll, @player_cards, @dealer_cards, @player_cards_sum, @dealer_cards_sum)
+      reveal_cards
     when 3
-      comparison
+      @interface.reveal_cards_message(@player.bankroll, @player_cards, @dealer_cards, @player_cards_sum, @dealer_cards_sum)
+      reveal_cards
     end
 
-    end_round
+    @interface.end_round_message
   end
 
   protected
 
-  def get_cards
+  def betting
     bets(@player)
     bets(@dealer)
-
-    2.times { hits(@deck, @player_cards, @player_cards_sum) }
-    2.times { hits(@deck, @dealer_cards, @dealer_cards_sum) }
-
-    check_cards_sum(@player_cards_sum)
-    check_cards_sum(@dealer_cards_sum)
-
-    @interface.start_round_message(@player_cards, @player, @player_cards_sum)
   end
 
-  def player_choice
-    @interface.player_choice_message(@dealer_choice_index)
+  def deal_cards
+    2.times { hits(@deck, @player_cards, @player_cards_sum, @player) }
+    2.times { hits(@deck, @dealer_cards, @dealer_cards_sum, @dealer) }
 
+    check_cards_sum(@player_cards, @player) if @player_cards_sum > 21
+    check_cards_sum(@dealer_cards, @dealer) if @dealer_cards_sum > 21
+  end
+
+  def player_turn
+    @interface.player_choice_message(@dealer_turn_index)
     @interface.choice
   end
 
-  def dealer_choice
-    @dealer_choice_index ||= 1
+  def dealer_turn
+    @dealer_turn_index ||= 1
 
-    if @dealer_cards_sum.sum < 17
-      hits(@deck, @dealer_cards, @dealer_cards_sum)
-      check_cards_sum(@dealer_cards_sum)
-
-      @interface.dealer_hits_message
-    else
-      @interface.dealer_stands_message
+    if @dealer_cards_sum < 17
+      hits(@deck, @dealer_cards, @dealer_cards_sum, @dealer)
+      check_cards_sum(@dealer_cards, @dealer) if @dealer_cards_sum > 21
     end
   end
 
   def add_card
-    hits(@deck, @player_cards, @player_cards_sum)
-    check_cards_sum(@player_cards_sum)
+    hits(@deck, @player_cards, @player_cards_sum, @player)
+    check_cards_sum(@player_cards, @player) if @player_cards_sum > 21
+  end
 
-    @interface.add_card_message(@player_cards, @player_cards_sum)
-
-    if @player_cards_sum.sum > 21
+  def lost_after_add_card
+    if @player_cards_sum > 21
       wins_bank(@dealer)
-
-      @interface.you_lost_message(@player)
+      @interface.you_lost_message(@player.bankroll)
     end
   end
 
-  def comparison
-    @interface.comparison_message(@player_cards, @dealer_cards, @player_cards_sum, @dealer_cards_sum)
-
-    if @dealer_cards_sum.sum > 21 || @player_cards_sum.sum > @dealer_cards_sum.sum
+  def reveal_cards
+    if @dealer_cards_sum > 21 || @player_cards_sum > @dealer_cards_sum
       wins_bank(@player)
-
-      @interface.you_won_message(@player)
-    elsif @player_cards_sum.sum < @dealer_cards_sum.sum
+    elsif @player_cards_sum < @dealer_cards_sum
       wins_bank(@dealer)
-
-      @interface.you_lost_message(@player)
-    elsif @player_cards_sum.sum == @dealer_cards_sum.sum
+    elsif @player_cards_sum == @dealer_cards_sum
       return_bank(@player)
       return_bank(@dealer)
-
-      @interface.tie_message(@player)
     end
   end
 
@@ -108,9 +109,10 @@ class Round
     player.bankroll -= 10
   end
 
-  def hits(deck, cards, cards_sum)
+  def hits(deck, cards, cards_sum, player)
     card = deck.give_card
-    cards_sum << card.count
+    cards_sum += card.count
+    instance_variable_set("@#{player.class.to_s.downcase}_cards_sum".to_sym, cards_sum)
     cards << card
   end
 
@@ -122,11 +124,11 @@ class Round
     player.bankroll += 10
   end
 
-  def check_cards_sum(cards_sum)
-    cards_sum << -10 if cards_sum.select { |card| card == 11 }.any? && cards_sum.sum > 21
-  end
-
-  def end_round
-    puts 'Раунд окончен'
+  def check_cards_sum(cards, player)
+    if cards.select { |card| card.count == 11 }.any?
+      cards_sum = instance_variable_get("@#{player.class.to_s.downcase}_cards_sum".to_sym)
+      cards_sum -= 10
+      instance_variable_set("@#{player.class.to_s.downcase}_cards_sum".to_sym, cards_sum)
+    end
   end
 end

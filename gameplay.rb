@@ -1,9 +1,9 @@
 class Gameplay
   def initialize
     @interface = Interface.new
-    @interface.start_game_message
+    name = @interface.start_game_message
 
-    @player = Player.new(@interface.name)
+    @player = Player.new(name)
     @dealer = Dealer.new    
   end
 
