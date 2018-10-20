@@ -21,12 +21,12 @@ class Round
 
     case first_choice
     when 1
-      player_skipped
+      after_player_skipped
     when 2
-      player_took_card
+      after_player_took_card
     when 3
-      @interface.reveal_cards_message(@player.bankroll, @player_cards, @dealer_cards, @player_cards_sum, @dealer_cards_sum)
       reveal_cards
+      @interface.reveal_cards_message(@player.bankroll, @player_cards, @dealer_cards, @player_cards_sum, @dealer_cards_sum)
     end
 
     @interface.end_round_message
@@ -34,7 +34,7 @@ class Round
 
   protected
 
-  def player_skipped
+  def after_player_skipped
     dealer_turn
     @interface.dealer_turn_message(@dealer_cards)     
 
@@ -44,24 +44,24 @@ class Round
 
     lost_after_add_card
 
-    if @player_cards_sum < 21
-      @interface.reveal_cards_message(@player.bankroll, @player_cards, @dealer_cards, @player_cards_sum, @dealer_cards_sum)
+    if @player_cards_sum < 22
       reveal_cards
+      @interface.reveal_cards_message(@player.bankroll, @player_cards, @dealer_cards, @player_cards_sum, @dealer_cards_sum)
     end
   end
 
-  def player_took_card
+  def after_player_took_card
     add_card
     @interface.add_card_message(@player_cards, @player_cards_sum)
 
     lost_after_add_card
 
-    if @player_cards_sum < 21
+    if @player_cards_sum < 22
       dealer_turn   
       @interface.dealer_turn_message(@dealer_cards)
 
-      @interface.reveal_cards_message(@player.bankroll, @player_cards, @dealer_cards, @player_cards_sum, @dealer_cards_sum)
       reveal_cards
+      @interface.reveal_cards_message(@player.bankroll, @player_cards, @dealer_cards, @player_cards_sum, @dealer_cards_sum)     
     end
   end
 
@@ -71,11 +71,11 @@ class Round
   end
 
   def deal_cards
-    2.times { hits(@deck, @player_cards, @player_cards_sum, @player) }
-    2.times { hits(@deck, @dealer_cards, @dealer_cards_sum, @dealer) }
+    2.times { @player_cards_sum += hits(@deck, @player_cards) }
+    2.times { @dealer_cards_sum += hits(@deck, @dealer_cards) }
 
-    check_cards_sum(@player_cards, @player) if @player_cards_sum > 21
-    check_cards_sum(@dealer_cards, @dealer) if @dealer_cards_sum > 21
+    @player_cards_sum += check_cards_sum(@player_cards) if @player_cards_sum > 21
+    @dealer_cards_sum += check_cards_sum(@dealer_cards) if @dealer_cards_sum > 21
   end
 
   def player_turn
@@ -87,14 +87,14 @@ class Round
     @dealer_turn_index ||= 1
 
     if @dealer_cards_sum < 17
-      hits(@deck, @dealer_cards, @dealer_cards_sum, @dealer)
-      check_cards_sum(@dealer_cards, @dealer) if @dealer_cards_sum > 21
+      @dealer_cards_sum += hits(@deck, @dealer_cards)
+      @dealer_cards_sum += check_cards_sum(@dealer_cards) if @dealer_cards_sum > 21
     end
   end
 
   def add_card
-    hits(@deck, @player_cards, @player_cards_sum, @player)
-    check_cards_sum(@player_cards, @player) if @player_cards_sum > 21
+    @player_cards_sum += hits(@deck, @player_cards)
+    @player_cards_sum += check_cards_sum(@player_cards) if @player_cards_sum > 21
   end
 
   def lost_after_add_card
@@ -119,15 +119,10 @@ class Round
     player.bankroll -= 10
   end
 
-  def hits(deck, cards, cards_sum, player)
+  def hits(deck, cards)
     card = deck.give_card    
     cards << card
-
-    if player.is_a?(Player)
-      @player_cards_sum += card.count
-    else
-      @dealer_cards_sum += card.count
-    end
+    card.count
   end
 
   def wins_bank(player)
@@ -138,11 +133,7 @@ class Round
     player.bankroll += 10
   end
 
-  def check_cards_sum(cards, player)
-    if cards.select { |card| card.count == 11 }.any? && player.is_a?(Player)
-      @player_cards_sum -= 10
-    elsif cards.select { |card| card.count == 11 }.any? && player.is_a?(Dealer)
-      @dealer_cards_sum -= 10
-    end
+  def check_cards_sum(cards)
+    cards.select { |card| card.count == 11 }.any? ? cards_sum_bonus = -10 : cards_sum_bonus = 0  
   end
 end
