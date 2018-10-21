@@ -1,35 +1,38 @@
 class Interface
   attr_accessor :choice, :last_choice
 
-  def start_game_message
+  def ask_name
     puts 'Как вас зовут?'
     name = gets.to_s.strip
 
     raise 'Введите правильное имя' if name.empty?
-    name.capitalize!
 
-    puts "#{name}, добро пожаловать в казино 'Три пера'. Пусть с вами прибудет сила бизонов!"
-    name
+    name.capitalize
   rescue StandardError => e
     puts e
     retry
   end
 
-  def start_round_message(player_cards, bankroll, cards_sum)
+  def greeting(name)
+    puts "#{name}, добро пожаловать в казино 'Три пера'. Пусть с вами прибудет сила бизонов!"
+  end
+
+  def start_round_message(player_cards, bankroll, points)
     puts "Вы поставили 10 фишек. Осталось #{bankroll}"
-    puts "Ваши карты #{show_cards(player_cards)} Очков #{cards_sum}"
+    puts "Ваши карты #{show_cards(player_cards)} Очков #{points}"
     puts 'Карты дилера Х Х'
   end
 
-  def player_choice_message(index)
+  def player_choice_message
     puts 'Сделайте выбор'
     puts '1 - Пропустить ход'
     puts '2 - Добавить карту'
     puts '3 - Открыть карты'
     @choice = gets.to_i
 
-    raise 'Вы уже пропускали ход' if @choice == 1 && index == 1
     raise 'Выбирайте внимательней' unless (1..3).cover?(@choice)
+
+    @choice
   rescue RuntimeError => e
     puts e
     retry
@@ -47,31 +50,33 @@ class Interface
     puts 'Карты дилера Х Х'
   end
 
-  def add_card_message(player_cards, cards_sum)
+  def add_card_message(player_cards, points)
     puts 'Вы взяли одну карту. Вам больше нельзя брать карты в этом раунде'
-    puts "Ваши карты #{show_cards(player_cards)} Очков #{cards_sum}"
+    puts "Ваши карты #{show_cards(player_cards)} Очков #{points}"
   end
 
-  def reveal_cards_message(bankroll, player_cards, dealer_cards, player_cards_sum, dealer_cards_sum)
+  def end_round_message(bankroll,
+                        player_cards,
+                        dealer_cards,
+                        player_points,
+                        dealer_points,
+                        winner)
     puts 'ВСКРЫВАЕМСЯ'
-    puts "Ваши карты #{show_cards(player_cards)} Очков #{player_cards_sum}"
-    puts "Карты дилера #{show_cards(dealer_cards)} #{dealer_cards_sum}"
+    puts "Ваши карты #{show_cards(player_cards)} Очков #{player_points}"
+    puts "Карты дилера #{show_cards(dealer_cards)} #{dealer_points}"
 
-    if dealer_cards_sum > 21 || player_cards_sum > dealer_cards_sum
+    if winner == :player
       puts "Вы выиграли. Ваш банкролл #{bankroll}"
-    elsif player_cards_sum < dealer_cards_sum
+    elsif winner == :dealer
       you_lost_message(bankroll)
-    elsif player_cards_sum == dealer_cards_sum
+    elsif winner == :draw
       puts "Ничья, ставки возвращены. Ваш банкролл #{bankroll}"
     end
-  end  
+    puts 'Раунд окончен'
+  end
 
   def you_lost_message(bankroll)
     puts "Вы проиграли. Ваш банкролл #{bankroll}"
-  end
-
-  def end_round_message
-    puts 'Раунд окончен'
   end
 
   def one_more_time_message
@@ -112,5 +117,5 @@ class Interface
 
   def show_cards(cards)
     cards.map { |card| card.value + card.suit }.join(' ')
-  end  
+  end
 end
