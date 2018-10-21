@@ -116,7 +116,10 @@ class Round
 
   def card_score(cards)
     points = cards.map(&:count).sum
-    points -= 10 if cards.select { |card| card.count == 11 }.any? && points > 21
+    aces_num = cards.select { |card| card.count == 11 }.size
+    aces_num.times do
+      points -= 10 if points > 21
+    end
     points
   end
 end
