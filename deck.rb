@@ -1,13 +1,15 @@
 require_relative 'cards'
 
 class Deck
+  attr_reader :deck
+
   def initialize
-    @cards = []
+    @deck = []
     make_deck
   end
 
   def give_card
-    @cards.pop
+    @deck.pop
   end
 
   protected
@@ -15,9 +17,9 @@ class Deck
   def make_deck
     Card::VALUES.each do |value|
       Card::SUITS.each do |suit|
-        @cards << Card.new(value, suit)
+        @deck << Card.new(value, suit)
       end
     end
-    @cards.shuffle!
+    @deck.shuffle!
   end
 end
