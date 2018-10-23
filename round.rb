@@ -1,21 +1,22 @@
 class Round
+
   def initialize(player, dealer, interface)
     @player = player
     @dealer = dealer
     @interface = interface
-    @hand = Hand.new
 
-    @player_points = 0
-    @dealer_points = 0
+    deck = Deck.new
+    @player.new_hand(deck)
+    @dealer.new_hand(deck)
   end
 
   def round_running
     betting
     initial_deal_cards
-    @interface.start_round_message(@player.cards, @player.bankroll, @player_points)
+
+    @interface.start_round_message(@player.cards, @player.bankroll, @player.points)
 
     first_player_turn
-
     return end_round if @finished
 
     dealer_turn
@@ -36,12 +37,9 @@ class Round
 
   def initial_deal_cards
     2.times do
-      @player.take_card(@hand.deck)
-      @dealer.take_card(@hand.deck)
+      @player.take_card
+      @dealer.take_card
     end
-
-    @player_points = @hand.card_score(@player.cards)
-    @dealer_points = @hand.card_score(@dealer.cards)
   end
 
   def first_player_turn
@@ -49,29 +47,28 @@ class Round
 
     case @choice
     when 2
-      add_card
-      @interface.add_card_message(@player.cards, @player_points)
-      @finished = true if @player_points > 21
+      @player.take_card
+      @interface.add_card_message(@player.cards, @player.points)
+      @finished = true if @player.points > 21
     when 3
       @finished = true
     end
   end
 
   def dealer_turn
-    return if @dealer_points >= 17
+    return if @dealer.points >= 17
 
-    @dealer.take_card(@hand.deck)
-    @dealer_points = @hand.card_score(@dealer.cards)
+    @dealer.take_card
 
-    @finished = true if @dealer_points > 21
+    @finished = true if @dealer.points > 21
   end
 
   def second_player_turn
     @choice = @interface.player_choice_message
 
     if @choice == 2
-      add_card
-      @interface.add_card_message(@player.cards, @player_points)
+      @player.take_card
+      @interface.add_card_message(@player.cards, @player.points)
     end
   end
 
@@ -82,20 +79,16 @@ class Round
     @interface.end_round_message(@player.bankroll,
                                  @player.cards,
                                  @dealer.cards,
-                                 @player_points,
-                                 @dealer_points,
+                                 @player.points,
+                                 @dealer.points,
                                  @winner)
-
-    @player.discard
-    @dealer.discard
   end
 
   def calculate_winner
-    return @winner = :player if @dealer_points > 21
-    return @winner = :dealer if @player_points > 21
-    return @winner = :draw if @player_points == @dealer_points
-
-    @winner = @player_points - @dealer_points > 0 ? :player : :dealer
+    return @winner = :player if @dealer.points > 21
+    return @winner = :dealer if @player.points > 21
+    return @winner = :draw if @player.points == @dealer.points
+    @winner = @player.points - @dealer.points > 0 ? :player : :dealer
   end
 
   def reveal_bank
@@ -107,10 +100,5 @@ class Round
       @player.bankroll += 10
       @dealer.bankroll += 10
     end
-  end
-
-  def add_card
-    @player.take_card(@hand.deck)
-    @player_points = @hand.card_score(@player.cards)
   end
 end
