@@ -1,9 +1,7 @@
 class Hand
-
   attr_accessor :points, :cards
 
-  def initialize(deck)
-    @@deck = deck
+  def initialize
     @points = 0
     @cards = []
   end
@@ -17,8 +15,10 @@ class Hand
     points
   end
 
-  def add_card
-    @cards << @@deck.give_card
+  def add_card(deck)
+    @cards << deck.give_card
     @points = card_score(cards)
   end
+
+  def deck; end
 end
