@@ -16,11 +16,11 @@ class Player
     @hand.points
   end
 
-  def take_card
-    @hand.add_card
+  def take_card(deck)
+    @hand.add_card(deck)
   end
 
-  def new_hand(deck)
-    @hand = Hand.new(deck)
+  def new_hand
+    @hand = Hand.new
   end
 end

@@ -5,9 +5,9 @@ class Round
     @dealer = dealer
     @interface = interface
 
-    deck = Deck.new
-    @player.new_hand(deck)
-    @dealer.new_hand(deck)
+    @deck = Deck.new
+    @player.new_hand
+    @dealer.new_hand
   end
 
   def round_running
@@ -37,8 +37,8 @@ class Round
 
   def initial_deal_cards
     2.times do
-      @player.take_card
-      @dealer.take_card
+      @player.take_card(@deck)
+      @dealer.take_card(@deck)
     end
   end
 
@@ -47,7 +47,7 @@ class Round
 
     case @choice
     when 2
-      @player.take_card
+      @player.take_card(@deck)
       @interface.add_card_message(@player.cards, @player.points)
       @finished = true if @player.points > 21
     when 3
@@ -58,7 +58,7 @@ class Round
   def dealer_turn
     return if @dealer.points >= 17
 
-    @dealer.take_card
+    @dealer.take_card(@deck)
 
     @finished = true if @dealer.points > 21
   end
@@ -67,7 +67,7 @@ class Round
     @choice = @interface.player_choice_message
 
     if @choice == 2
-      @player.take_card
+      @player.take_card(@deck)
       @interface.add_card_message(@player.cards, @player.points)
     end
   end
