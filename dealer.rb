@@ -6,7 +6,7 @@ class Dealer
   end
 
   def cards
-    @hand.cards    
+    @hand.cards
   end
 
   def points

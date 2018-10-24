@@ -15,9 +15,9 @@ class Deck
   protected
 
   def make_deck
-    Card::VALUES.each do |value|
-      Card::SUITS.each do |suit|
-        @cards << Card.new(value, suit)
+    Cards::VALUES.each do |value|
+      Cards::SUITS.each do |suit|
+        @cards << Cards.new(value, suit)
       end
     end
     @cards.shuffle!

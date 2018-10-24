@@ -1,5 +1,4 @@
 class Round
-
   def initialize(player, dealer, interface)
     @player = player
     @dealer = dealer
@@ -88,6 +87,7 @@ class Round
     return @winner = :player if @dealer.points > 21
     return @winner = :dealer if @player.points > 21
     return @winner = :draw if @player.points == @dealer.points
+
     @winner = @player.points - @dealer.points > 0 ? :player : :dealer
   end
 
